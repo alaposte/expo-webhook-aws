@@ -34,3 +34,5 @@ typings/
 .vscode
 .history
 
+# dist folder with build
+dist
