@@ -25,16 +25,20 @@ jobs:
           yarn build
         env:
           CI: true
+        
+      - name: Moving into dist folder
+        run: cd ./dist
+
+      - name: Displaying folder structure
+        run: ls -la
 
       - name: zip the build
         uses: montudor/action-zip@v0.1.0
         with:
           args: zip -qq -r bundle.zip ./*
-        workingdir: ./dist
 
       - name: moving the zip file on directory up
-        run: mv ./bundle.zip ../
-        workingdir: ./dist
+        run: mv ./dist/bundle.zip ./
         
       - name: Displaying folder structure
         run: ls -la
@@ -54,7 +58,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: bundle
-          path: ./bundle.zip
+          # path: ./bundle.zip
         
       - name: Displaying structure of downloaded file
         run: ls -la
