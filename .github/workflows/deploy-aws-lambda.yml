@@ -33,9 +33,6 @@ jobs:
         uses: montudor/action-zip@v0.1.0
         with:
           args: zip -j -9 -qq -r bundle.zip ./dist *.js
-
-      - name: moving the zip file on directory up
-        run: mv ./dist/bundle.zip ./
         
       - name: Displaying folder structure
         run: ls -la
