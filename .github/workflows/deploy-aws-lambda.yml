@@ -1,0 +1,61 @@
+name: Deploy to aws lambda
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build the nodejs function
+    strategy:
+      matrix:
+        node-version: [12.x]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: yarn install and build
+        run: |
+          yarn
+          yarn build --if-present
+        env:
+          CI: true
+
+      - name: zip the build
+        uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qq -r ./bundle.zip ./
+
+      - name: Uploadinging the artifact to use it in the "deploy" job
+        uses: actions/upload-artifact@v2
+        with:
+          name: bundle
+          path: bundle.zip
+
+  deploy:
+    needs: build
+    name: Deploy the build to AWS lambda
+    runs-on: ubuntu-latest
+    steps:
+      - name: Downloading the bundl artifact from "build" job
+        uses: actions/download-artifact@v2
+        with:
+          name: bundle
+          path: bundle.zip
+        
+      - name: Displaying structure of downloaded file
+        run: ls -R
+
+      - name: Using lamda actions to deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_LAMBDA_REGION }}
+          function_name: ${{ secrets.AWS_FUNCTION_NAME }}
+          zip_file: bundle.zip
