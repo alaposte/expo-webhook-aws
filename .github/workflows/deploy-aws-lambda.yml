@@ -29,13 +29,21 @@ jobs:
       - name: zip the build
         uses: montudor/action-zip@v0.1.0
         with:
-          args: zip -qq -r ./bundle.zip ./
+          args: zip -qq -r bundle.zip ./*
+        workingdir: ./dist
 
-      - name: Uploadinging the artifact to use it in the "deploy" job
+      - name: moving the zip file on directory up
+        run: mv ./bundle.zip ../
+        workingdir: ./dist
+        
+      - name: Displaying folder structure
+        run: ls -la
+
+      - name: Uploading the artifact to use it in the "deploy" job
         uses: actions/upload-artifact@v2
         with:
           name: bundle
-          path: bundle.zip
+          path: ./bundle.zip
 
   deploy:
     needs: build
@@ -46,10 +54,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: bundle
-          path: bundle.zip
+          path: ./bundle.zip
         
       - name: Displaying structure of downloaded file
-        run: ls -R
+        run: ls -la
 
       - name: Using lamda actions to deploy
         uses: appleboy/lambda-action@master
